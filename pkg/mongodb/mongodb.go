@@ -16,26 +16,13 @@ const (
 )
 
 func NewMongoDBConnection(ctx context.Context, cfg *config.Config) (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI(cfg.MongoDB.URI).SetAuth(options.Credential{
-		Username: cfg.MongoDB.User,
-		Password: cfg.MongoDB.Password,
-	}).SetConnectTimeout(connectTimeout).
+	clientOptions := options.Client().ApplyURI(cfg.MongoDB.URI).SetConnectTimeout(connectTimeout).
 		SetMaxConnIdleTime(maxConnIdleTime).
 		SetMinPoolSize(minPoolSize).
 		SetMaxPoolSize(maxPoolSize)
 	client, err := mongo.Connect(ctx, clientOptions)
 
 	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
-
-	if err := client.Connect(ctx); err != nil {
 		return nil, err
 	}
 

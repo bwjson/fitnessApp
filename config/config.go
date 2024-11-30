@@ -50,10 +50,8 @@ type Http struct {
 }
 
 type MongoDB struct {
-	URI      string
-	User     string
-	Password string
-	DB       string
+	URI string
+	DB  string
 }
 
 type Kafka struct {
@@ -62,7 +60,7 @@ type Kafka struct {
 
 func exportConfig() error {
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".users/config")
+	viper.AddConfigPath("config")
 	if os.Getenv("MODE") == "DOCKER" {
 		viper.SetConfigName("docker-config.yml")
 	} else {
