@@ -11,7 +11,7 @@ Server:
 
 
 Http:
-  Port: ":5007"
+  Port: "8000"
   PprofPort: ":8100"
   Timeout: 15
   ReadTimeout: 5

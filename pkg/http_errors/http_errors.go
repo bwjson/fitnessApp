@@ -158,5 +158,5 @@ func ErrorResponse(err error) (int, interface{}) {
 
 func NewErrorResponse(c *gin.Context, err error) {
 	restErr := ParseErrors(err)
-	c.AbortWithStatusJSON(restErr.StatusCode(), restErr.ErrBody())
+	c.JSON(restErr.StatusCode(), restErr.ErrBody())
 }
