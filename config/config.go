@@ -9,7 +9,7 @@ import (
 
 const (
 	GRPC_PORT = ":50051"
-	HTTP_PORT = ":50052"
+	HTTP_PORT = ":8000"
 )
 
 type Config struct {
@@ -85,13 +85,13 @@ func ParseConfig() (*Config, error) {
 		return nil, err
 	}
 
-	gRPCPort := os.Getenv("GRPC_PORT")
-	if gRPCPort == "" {
+	log.Printf("%v", c)
+
+	if c.Server.Port == "" {
 		c.Server.Port = GRPC_PORT
 	}
 
-	httpPort := os.Getenv("HTTP_PORT")
-	if httpPort == "" {
+	if c.Http.Port == "" {
 		c.Http.Port = HTTP_PORT
 	}
 

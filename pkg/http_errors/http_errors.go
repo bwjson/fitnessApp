@@ -31,6 +31,7 @@ var (
 	NotFound              = errors.New("Not Found")
 	Unauthorized          = errors.New("Unauthorized")
 	Forbidden             = errors.New("Forbidden")
+	UserNotFound          = errors.New("User not found")
 	PermissionDenied      = errors.New("Permission Denied")
 	ExpiredCSRFError      = errors.New("Expired CSRF token")
 	WrongCSRFToken        = errors.New("Wrong CSRF token")
@@ -107,6 +108,9 @@ func ParseErrors(err error) HTTPErr {
 	case errors.Is(err, WrongCredentials):
 		return NewHTTPError(http.StatusUnauthorized, ErrUnauthorized, nil)
 
+	case errors.Is(err, UserNotFound):
+		return NewHTTPError(http.StatusBadRequest, ErrNotFound, "Invalid login data")
+
 	case strings.Contains(strings.ToLower(err.Error()), "sqlstate"):
 		return parseSqlErrors(err)
 
@@ -127,6 +131,9 @@ func ParseErrors(err error) HTTPErr {
 
 	case strings.Contains(strings.ToLower(err.Error()), "bcrypt"):
 		return NewHTTPError(http.StatusBadRequest, ErrBadRequest, nil)
+
+	case strings.Contains(strings.ToLower(err.Error()), "email_1 dup key"):
+		return NewHTTPError(http.StatusBadRequest, ErrBadRequest, err)
 
 	default:
 		if restErr, ok := err.(HTTPErr); ok {

@@ -3,6 +3,8 @@ package mongodb
 import (
 	"context"
 	"github.com/bwjson/fitnessApp/config"
+	"github.com/bwjson/fitnessApp/internal/repository"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
@@ -31,4 +33,21 @@ func NewMongoDBConnection(ctx context.Context, cfg *config.Config) (*mongo.Clien
 	}
 
 	return client, nil
+}
+
+func SetupMongoDBIndex(ctx context.Context, client *mongo.Client) error {
+	coll := client.Database(repository.FitnessDB).Collection(repository.UsersCollection)
+
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"email", 1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := coll.Indexes().CreateOne(ctx, indexModel)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

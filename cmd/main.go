@@ -47,6 +47,12 @@ func main() {
 	}()
 	appLogger.Infof("Connected to MongoDB: %v", mongoDBConn.NumberSessionsInProgress())
 
+	err = mongodb.SetupMongoDBIndex(ctx, mongoDBConn)
+	if err != nil {
+		appLogger.Fatal("MongoDB setup indexes problem ", err)
+	}
+	appLogger.Info("Setup indexes successfully MongoDB")
+
 	mongoRepo := repository.NewMongoRepository(mongoDBConn)
 	services := service.NewService(mongoRepo, appLogger)
 	handlers := rest.NewHandler(services, appLogger)
