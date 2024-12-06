@@ -1,0 +1,182 @@
+basePath: /
+definitions:
+  dto.LoginInput:
+    properties:
+      email:
+        maxLength: 64
+        type: string
+      password:
+        maxLength: 128
+        minLength: 4
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.TokenResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  http_errors.HTTPError:
+    properties:
+      causes: {}
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+  models.Category:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Lesson:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Subscription:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      lessons:
+        items:
+          $ref: '#/definitions/models.Lesson'
+        type: array
+      price:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      lastVisitAt:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      registeredAt:
+        type: string
+      subscriptions:
+        items:
+          $ref: '#/definitions/models.Subscription'
+        type: array
+      userID:
+        type: string
+    required:
+    - name
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: API Server for FitnessApp
+  termsOfService: http://swagger.io/terms/
+  title: FitnessApp Backend
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: authenticate user
+      parameters:
+      - description: Login data
+        in: body
+        name: loginData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http_errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_errors.HTTPError'
+      summary: login
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: creating new account
+      parameters:
+      - description: Account data
+        in: body
+        name: registerData
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http_errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_errors.HTTPError'
+      summary: register
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

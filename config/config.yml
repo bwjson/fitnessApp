@@ -33,3 +33,11 @@ MongoDB:
   URI: "mongodb://localhost:27017/"
   DB: "fitnessApp"
 
+AuthConfig:
+  JWT:
+    AccessTokenTTL: 15m
+    RefreshTokenTTL: 720h
+    SigningKey: "nf3823848h3290fb289"
+  Salt: "3n92rn329fjids9"
+
+

@@ -4,27 +4,16 @@ import (
 	"context"
 	"github.com/bwjson/fitnessApp/internal/dto"
 	"github.com/bwjson/fitnessApp/internal/models"
-	"github.com/bwjson/fitnessApp/pkg/auth"
-	"github.com/bwjson/fitnessApp/pkg/hash"
-	"time"
-)
-
-const (
-	salt       = "3n92rn329fjids9"
-	signingKey = "nf3823848h3290fb289"
-	ttl        = time.Minute * 30
 )
 
 func (s *Service) Create(ctx context.Context, user *models.User) (*models.User, error) {
-	hashes := hash.NewSHA1Hasher(salt)
-	user.Password = hashes.GenerateHashedPassword(user.Password)
+	user.Password = s.hasher.GenerateHashedPassword(user.Password)
 	return s.mongoRepo.Create(ctx, user)
 }
 
 func (s *Service) Login(ctx context.Context, input dto.LoginInput) (dto.TokenResponse, error) {
 	tokenResponse := dto.TokenResponse{}
-	hashes := hash.NewSHA1Hasher(salt)
-	input.Password = hashes.GenerateHashedPassword(input.Password)
+	input.Password = s.hasher.GenerateHashedPassword(input.Password)
 
 	_, err := s.mongoRepo.GetUser(ctx, input.Email, input.Password)
 
@@ -32,24 +21,27 @@ func (s *Service) Login(ctx context.Context, input dto.LoginInput) (dto.TokenRes
 		return tokenResponse, err
 	}
 
-	manager, err := auth.NewTokenManager(signingKey, ttl)
-	if err != nil {
-		return tokenResponse, err
-	}
-
 	// access token
-	accessToken, err := manager.AccessTokenGen(input)
+	accessToken, err := s.tokenManager.AccessTokenGen(input, s.accessTokenTTL)
 	if err != nil {
 		return tokenResponse, err
 	}
 	tokenResponse.AccessToken = accessToken
 
 	// refresh token
-	refreshToken, err := manager.RefreshTokenGen()
+	refreshToken, err := s.tokenManager.RefreshTokenGen(s.refreshTokenTTL)
 	if err != nil {
 		return tokenResponse, err
 	}
 	tokenResponse.RefreshToken = refreshToken
 
 	return tokenResponse, nil
+}
+
+func (s *Service) GetProfileInfo(ctx context.Context, email string) (*models.User, error) {
+	return s.mongoRepo.GetUserByEmail(ctx, email)
+}
+
+func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
+	return s.mongoRepo.GetAllUsers(ctx)
 }

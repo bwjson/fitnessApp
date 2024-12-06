@@ -8,6 +8,18 @@ import (
 	"net/http"
 )
 
+// Register godoc
+// @Summary      register
+// @Description  creating new account
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        registerData body models.User true "Account data"
+// @Success      200  {object}  models.User
+// @Failure 400 {object} http_errors.HTTPError "Bad Request"
+// @Failure 404 {object} http_errors.HTTPError "Not Found"
+// @Failure 500 {object} http_errors.HTTPError "Internal Server Error"
+// @Router       /auth/register [post]
 func (h *Handler) register(c *gin.Context) {
 	var data models.User
 
@@ -32,6 +44,18 @@ func (h *Handler) register(c *gin.Context) {
 	c.JSON(http.StatusCreated, returned_data)
 }
 
+// Login godoc
+// @Summary      login
+// @Description  authenticate user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        loginData body dto.LoginInput true "Login data"
+// @Success      200  {object}  dto.TokenResponse
+// @Failure 400 {object} http_errors.HTTPError "Bad Request"
+// @Failure 404 {object} http_errors.HTTPError "Not Found"
+// @Failure 500 {object} http_errors.HTTPError "Internal Server Error"
+// @Router       /auth/login [post]
 func (h *Handler) login(c *gin.Context) {
 	var data dto.LoginInput
 	var tokens dto.TokenResponse
@@ -41,6 +65,7 @@ func (h *Handler) login(c *gin.Context) {
 	if err := c.BindJSON(&data); err != nil {
 		h.log.Errorf("c.Bind: %v", err)
 		http_errors.NewErrorResponse(c, err)
+		return
 	}
 
 	tokens, err := h.services.Login(ctx, data)
@@ -53,5 +78,42 @@ func (h *Handler) login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"access_token":  tokens.AccessToken,
 		"refresh_token": tokens.RefreshToken,
+	})
+}
+
+func (h *Handler) getProfileInfo(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	email, err := getUserEmail(c)
+	if err != nil {
+		h.log.Errorf("getStudentId: %v", err)
+		http_errors.NewErrorResponse(c, err)
+		return
+	}
+
+	user, err := h.services.GetProfileInfo(ctx, email)
+	if err != nil {
+		h.log.Errorf("services.GetProfileInfo: %v", err)
+		http_errors.NewErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"info": user,
+	})
+}
+
+func (h *Handler) getAll(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	users, err := h.services.GetAllUsers(ctx)
+	if err != nil {
+		h.log.Errorf("GetAllUsers: %v", err)
+		http_errors.NewErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": users,
 	})
 }

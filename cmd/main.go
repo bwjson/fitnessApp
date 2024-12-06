@@ -7,14 +7,28 @@ import (
 	"github.com/bwjson/fitnessApp/internal/server"
 	"github.com/bwjson/fitnessApp/internal/service"
 	"github.com/bwjson/fitnessApp/internal/transport/rest"
+	"github.com/bwjson/fitnessApp/pkg/auth"
+	"github.com/bwjson/fitnessApp/pkg/hash"
 	"github.com/bwjson/fitnessApp/pkg/logger"
 	"github.com/bwjson/fitnessApp/pkg/mongodb"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
+// @title FitnessApp Backend
+// @version 1.0
+// @description API Server for FitnessApp
+// @termsOfService  http://swagger.io/terms/
+
+// @host localhost:8000
+// @BasePath /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	log.Println("Starting user microservice")
 	ctx, cancel := context.WithCancel(context.Background())
@@ -53,9 +67,24 @@ func main() {
 	}
 	appLogger.Info("Setup indexes successfully MongoDB")
 
+	tokenManager, err := auth.NewTokenManager(cfg.AuthConfig.JWT.SigningKey)
+	if err != nil {
+		appLogger.Error(err)
+		return
+	}
+
+	hasher := hash.NewSHA1Hasher(cfg.AuthConfig.Salt)
+
 	mongoRepo := repository.NewMongoRepository(mongoDBConn)
-	services := service.NewService(mongoRepo, appLogger)
-	handlers := rest.NewHandler(services, appLogger)
+	services := service.NewService(
+		mongoRepo,
+		appLogger,
+		tokenManager,
+		hasher,
+		cfg.AuthConfig.JWT.AccessTokenTTL,
+		cfg.AuthConfig.JWT.RefreshTokenTTL,
+	)
+	handlers := rest.NewHandler(services, appLogger, tokenManager)
 
 	httpSrv := new(server.HttpServer)
 
@@ -70,5 +99,6 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
+	time.Sleep(2 * time.Second)
 	appLogger.Info("shutting down server...")
 }

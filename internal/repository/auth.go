@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"github.com/bwjson/fitnessApp/internal/models"
 	"github.com/bwjson/fitnessApp/pkg/http_errors"
 	"github.com/pkg/errors"
@@ -36,8 +35,6 @@ func (r *MongoRepository) Create(ctx context.Context, user *models.User) (*model
 		return nil, errors.Wrap(err, "InsertOne")
 	}
 
-	fmt.Printf("InsertedID: %v\n", result.InsertedID)
-
 	objectId, ok := result.InsertedID.(primitive.ObjectID)
 	if !ok {
 		return nil, errors.Wrap(err, "objectId")
@@ -69,4 +66,44 @@ func (r *MongoRepository) GetUser(ctx context.Context, email, password string) (
 	}
 
 	return &user, nil
+}
+
+func (r *MongoRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	collection := r.mongoDB.Database(FitnessDB).Collection(UsersCollection)
+
+	filter := bson.D{{"email", email}}
+
+	var user models.User
+
+	err := collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, http_errors.UserNotFound
+		}
+		return nil, errors.Wrap(err, "FindOne")
+	}
+
+	return &user, nil
+}
+
+func (r *MongoRepository) GetAllUsers(ctx context.Context) ([]models.User, error) {
+	collection := r.mongoDB.Database(FitnessDB).Collection(UsersCollection)
+
+	var users []models.User
+
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, http_errors.UserNotFound
+		}
+		return nil, errors.Wrap(err, "Find")
+	}
+
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, errors.Wrap(err, "cursor.All")
+	}
+
+	return users, nil
 }

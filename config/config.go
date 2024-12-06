@@ -19,6 +19,7 @@ type Config struct {
 	MongoDB    MongoDB
 	Kafka      Kafka
 	Logger     Logger
+	AuthConfig AuthConfig
 }
 
 type Server struct {
@@ -56,6 +57,17 @@ type MongoDB struct {
 
 type Kafka struct {
 	Brokers []string
+}
+
+type AuthConfig struct {
+	JWT  JWTConfig
+	Salt string
+}
+
+type JWTConfig struct {
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
+	SigningKey      string
 }
 
 func exportConfig() error {
