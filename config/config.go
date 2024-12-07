@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/spf13/viper"
 	"log"
-	"os"
 	"time"
 )
 
@@ -73,11 +72,12 @@ type JWTConfig struct {
 func exportConfig() error {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("config")
-	if os.Getenv("MODE") == "DOCKER" {
-		viper.SetConfigName("docker-config.yml")
-	} else {
-		viper.SetConfigName("config.yml")
-	}
+	viper.SetConfigName("config.yml")
+	//if os.Getenv("MODE") == "DOCKER" {
+	//	viper.SetConfigName("docker-config.yml")
+	//} else {
+	//	viper.SetConfigName("config.yml")
+	//}
 
 	if err := viper.ReadInConfig(); err != nil {
 		return err

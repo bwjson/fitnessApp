@@ -15,7 +15,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 // @title FitnessApp Backend
@@ -59,6 +58,7 @@ func main() {
 			appLogger.Fatal("MongoDB disconnection problem: ", err)
 		}
 	}()
+
 	appLogger.Infof("Connected to MongoDB: %v", mongoDBConn.NumberSessionsInProgress())
 
 	err = mongodb.SetupMongoDBIndex(ctx, mongoDBConn)
@@ -99,6 +99,5 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	time.Sleep(2 * time.Second)
 	appLogger.Info("shutting down server...")
 }

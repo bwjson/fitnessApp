@@ -81,6 +81,17 @@ func (h *Handler) login(c *gin.Context) {
 	})
 }
 
+// Profile godoc
+// @Security ApiKeyAuth
+// @Summary      profile info
+// @Description  get profile info
+// @Tags         user
+// @Produce      json
+// @Success      200  {object}  models.User
+// @Failure 400 {object} http_errors.HTTPError "Bad Request"
+// @Failure 404 {object} http_errors.HTTPError "Not Found"
+// @Failure 500 {object} http_errors.HTTPError "Internal Server Error"
+// @Router       /user/ [get]
 func (h *Handler) getProfileInfo(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -103,6 +114,17 @@ func (h *Handler) getProfileInfo(c *gin.Context) {
 	})
 }
 
+// ProfileAll godoc
+// @Security ApiKeyAuth
+// @Summary      all profile info
+// @Description  get all profile info
+// @Tags         user
+// @Produce      json
+// @Success      200  {object}  []models.User
+// @Failure 400 {object} http_errors.HTTPError "Bad Request"
+// @Failure 404 {object} http_errors.HTTPError "Not Found"
+// @Failure 500 {object} http_errors.HTTPError "Internal Server Error"
+// @Router       /user/all [get]
 func (h *Handler) getAll(c *gin.Context) {
 	ctx := c.Request.Context()
 
