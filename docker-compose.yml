@@ -7,6 +7,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 1234
+    ports:
+      - "27017:27017"
 
   app:
     image: user_service:local
@@ -16,6 +18,13 @@ services:
     restart: always
     depends_on:
       - mongodb
+    entrypoint: >
+      sh -c "
+      until nc -z mongodb 27017; do
+        echo 'Waiting for MongoDB to start...';
+        sleep 2;
+      done;
+      /app"
 
 
 

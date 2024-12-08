@@ -67,12 +67,14 @@ func main() {
 	}
 	appLogger.Info("Setup indexes successfully MongoDB")
 
+	appLogger.Info("Token manager", cfg.Http.Port)
 	tokenManager, err := auth.NewTokenManager(cfg.AuthConfig.JWT.SigningKey)
 	if err != nil {
 		appLogger.Error(err)
 		return
 	}
 
+	appLogger.Info("Dependencies", cfg.Http.Port)
 	hasher := hash.NewSHA1Hasher(cfg.AuthConfig.Salt)
 
 	mongoRepo := repository.NewMongoRepository(mongoDBConn)
@@ -86,6 +88,7 @@ func main() {
 	)
 	handlers := rest.NewHandler(services, appLogger, tokenManager)
 
+	appLogger.Info("Create http", cfg.Http.Port)
 	httpSrv := new(server.HttpServer)
 
 	go func() {
